@@ -1,0 +1,211 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RADAR TOTAL — Confirmación de pago</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f5f5f5;
+    color:#222;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.card{
+    width:min(560px,90%);
+    background:white;
+    padding:40px;
+    border-radius:14px;
+    box-shadow:0 8px 30px rgba(0,0,0,.10);
+    text-align:center;
+}
+
+h1{
+    margin-top:0;
+}
+
+#estado{
+    margin:25px 0;
+    line-height:1.6;
+}
+
+.licencia{
+    display:none;
+    margin-top:25px;
+    padding:20px;
+    background:#f1f1f1;
+    border-radius:10px;
+}
+
+.codigo{
+    font-size:20px;
+    font-weight:bold;
+    letter-spacing:1px;
+    word-break:break-all;
+    margin:15px 0;
+}
+
+button{
+    border:0;
+    padding:12px 22px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <h1>Pago recibido</h1>
+
+    <div id="estado">
+        Estamos verificando tu pago y generando tu licencia...
+    </div>
+
+    <div id="licencia" class="licencia">
+
+        <div>Tu licencia de RADAR TOTAL es:</div>
+
+        <div id="codigo" class="codigo"></div>
+
+        <button onclick="copiarLicencia()">COPIAR LICENCIA</button>
+
+        <p id="plan"></p>
+        <p id="vencimiento"></p>
+
+    </div>
+
+</div>
+
+<script>
+
+const WORKER =
+    "https://radar-total-wompi.palaciofutbolasociacion.workers.dev";
+
+const parametros = new URLSearchParams(window.location.search);
+
+const transactionId = parametros.get("id");
+
+const estado = document.getElementById("estado");
+const licenciaBox = document.getElementById("licencia");
+const codigo = document.getElementById("codigo");
+const plan = document.getElementById("plan");
+const vencimiento = document.getElementById("vencimiento");
+
+let intentos = 0;
+const MAX_INTENTOS = 20;
+
+async function consultarLicencia(){
+
+    if(!transactionId){
+
+        estado.textContent =
+            "No se encontró el identificador de la transacción.";
+
+        return;
+    }
+
+    try{
+
+        const respuesta = await fetch(
+            WORKER +
+            "/license?transaction_id=" +
+            encodeURIComponent(transactionId)
+        );
+
+        const datos = await respuesta.json();
+
+        if(datos.valid){
+
+            codigo.textContent = datos.license_key;
+
+            plan.textContent =
+                "Plan: " + datos.plan;
+
+            if(datos.expires_at){
+
+                const fecha =
+                    new Date(datos.expires_at);
+
+                vencimiento.textContent =
+                    "Vigencia hasta: " +
+                    fecha.toLocaleDateString("es-CO");
+            }
+
+            estado.textContent =
+                "Tu licencia ha sido generada correctamente.";
+
+            licenciaBox.style.display = "block";
+
+            return;
+        }
+
+        intentos++;
+
+        if(intentos < MAX_INTENTOS){
+
+            estado.textContent =
+                "Estamos terminando de procesar tu pago. " +
+                "Intento " + intentos + " de " + MAX_INTENTOS + "...";
+
+            setTimeout(consultarLicencia,3000);
+
+        }else{
+
+            estado.textContent =
+                "El pago fue recibido, pero todavía no " +
+                "podemos mostrar la licencia. " +
+                "Conserva el comprobante de pago y vuelve a intentarlo.";
+        }
+
+    }catch(error){
+
+        intentos++;
+
+        if(intentos < MAX_INTENTOS){
+
+            estado.textContent =
+                "Estamos verificando el pago. " +
+                "Intento " + intentos + " de " + MAX_INTENTOS + "...";
+
+            setTimeout(consultarLicencia,3000);
+
+        }else{
+
+            estado.textContent =
+                "No fue posible consultar la licencia en este momento.";
+        }
+    }
+}
+
+function copiarLicencia(){
+
+    navigator.clipboard.writeText(
+        codigo.textContent
+    );
+
+    const boton =
+        document.querySelector("button");
+
+    boton.textContent = "LICENCIA COPIADA";
+
+    setTimeout(() => {
+        boton.textContent = "COPIAR LICENCIA";
+    },2000);
+}
+
+consultarLicencia();
+
+</script>
+
+</body>
+</html>
