@@ -241,7 +241,16 @@ footer{padding:25px;text-align:center;background:var(--paper);border-top:1px sol
 <div class="wrap">
 <div class="eyebrow">Tu opinión es importante</div>
 <p>Cuéntanos cómo ha sido tu experiencia, qué te gustaría mejorar o qué nuevas funciones te serían útiles.</p>
-<a class="cta" href="mailto:palaciofutbolasociacion@gmail.com?subject=Opinión%20sobre%20RADAR%20TOTAL">DEJA TUS COMENTARIOS</a>
+<form action="https://formspree.io/f/mwlvrany" method="POST" style="max-width:620px;margin:24px auto 0;text-align:left">
+<input type="hidden" name="_subject" value="Nuevo comentario sobre RADAR TOTAL">
+<label for="feedback-name" style="display:block;margin:12px 0 6px">Nombre (opcional)</label>
+<input id="feedback-name" name="name" type="text" style="box-sizing:border-box;width:100%;padding:12px;border:1px solid #cbd2d8;border-radius:6px">
+<label for="feedback-email" style="display:block;margin:12px 0 6px">Correo electrónico (opcional)</label>
+<input id="feedback-email" name="email" type="email" style="box-sizing:border-box;width:100%;padding:12px;border:1px solid #cbd2d8;border-radius:6px">
+<label for="feedback-message" style="display:block;margin:12px 0 6px">Tu comentario</label>
+<textarea id="feedback-message" name="message" required rows="5" style="box-sizing:border-box;width:100%;padding:12px;border:1px solid #cbd2d8;border-radius:6px;font:inherit"></textarea>
+<button class="cta" type="submit" style="border:0;cursor:pointer;margin-top:16px">ENVIAR COMENTARIO</button>
+</form>
 </div>
 </section>
 <section class="contact">
